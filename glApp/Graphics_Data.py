@@ -1,6 +1,7 @@
 from OpenGL.GL import *
 import numpy as np
 
+
 class Graphics_Data():
     def __init__(self, data_type, data):
         self.data_type = data_type
@@ -15,8 +16,16 @@ class Graphics_Data():
 
     def create_variable(self, program_id, variable_name):
         variable_id = glGetAttribLocation(program_id, variable_name)
+        # If the attribute is not used in the shader, glGetAttribLocation returns -1.
+        if variable_id == -1:
+            return
         glBindBuffer(GL_ARRAY_BUFFER, self.buffer_ref)
         if self.data_type == "vec3":
+            glVertexAttribPointer(variable_id, 3, GL_FLOAT, False, 0, None)
+        elif self.data_type == "vec2":
+            glVertexAttribPointer(variable_id, 2, GL_FLOAT, False, 0, None)
+        else:
+            # default fallback: try vec3
             glVertexAttribPointer(variable_id, 3, GL_FLOAT, False, 0, None)
 
         glEnableVertexAttribArray(variable_id)

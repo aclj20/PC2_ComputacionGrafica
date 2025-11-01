@@ -8,4 +8,4 @@ python main.py
 ```
 
 ### Output
-![alt text](img/output.jpg)
+![alt text](img/output.png)

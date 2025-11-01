@@ -25,11 +25,22 @@ class Mesh:
         colors.create_variable(program_id, "vertex_color")
         v_normals = Graphics_Data("vec3", vertex_normals)
         v_normals.create_variable(program_id, "vertex_normal")
+        # If UVs were provided, create a vec2 attribute for texture coordinates
+        try:
+            if vertex_uvs is not None and len(vertex_uvs) > 0:
+                v_uvs = Graphics_Data("vec2", vertex_uvs)
+                v_uvs.create_variable(program_id, "texcoord")
+        except Exception:
+            # keep backward compatibility if vertex_uvs is missing or malformed
+            pass
         self.program_id = program_id
         self.transformation_mat = identity_mat()
-        self.transformation_mat = rotateA(self.transformation_mat, rotation.angle, rotation.axis)
-        self.transformation_mat = translate(self.transformation_mat, translation.x, translation.y, translation.z)
-        self.transformation_mat = scale3(self.transformation_mat, scale.x, scale.y, scale.z)
+        self.transformation_mat = rotateA(
+            self.transformation_mat, rotation.angle, rotation.axis)
+        self.transformation_mat = translate(
+            self.transformation_mat, translation.x, translation.y, translation.z)
+        self.transformation_mat = scale3(
+            self.transformation_mat, scale.x, scale.y, scale.z)
         self.transformation = Uniform("mat4", self.transformation_mat)
         self.transformation.find_variable(program_id, "model_mat")
         self.move_rotation = move_rotation
@@ -38,19 +49,20 @@ class Mesh:
         self.program_id = program_id
 
     def draw(self):
-        self.transformation_mat = rotateA(self.transformation_mat, self.move_rotation.angle, self.move_rotation.axis)
+        self.transformation_mat = rotateA(
+            self.transformation_mat, self.move_rotation.angle, self.move_rotation.axis)
         self.transformation_mat = translate(self.transformation_mat,
-                                          self.move_translate.x, self.move_translate.y, self.move_translate.z)
+                                            self.move_translate.x, self.move_translate.y, self.move_translate.z)
         self.transformation_mat = scale3(self.transformation_mat,
-                                       self.move_scale.x, self.move_scale.y, self.move_scale.z)
+                                         self.move_scale.x, self.move_scale.y, self.move_scale.z)
         self.transformation = Uniform("mat4", self.transformation_mat)
         self.transformation.find_variable(self.program_id, "model_mat")
         self.transformation.load()
-        
+
         # Set material_id uniform if it exists
         if hasattr(self, 'material_id'):
             material_loc = glGetUniformLocation(self.program_id, "material_id")
             glUniform1i(material_loc, self.material_id)
-            
+
         glBindVertexArray(self.vao_ref)
         glDrawArrays(self.draw_type, 0, len(self.vertices))
